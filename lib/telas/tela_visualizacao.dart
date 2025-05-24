@@ -4,63 +4,34 @@ import 'package:intl/intl.dart';
 import 'tela_criacao.dart';
 import 'tela_edicao.dart';
 import 'tela_confirmacao_exclusao.dart';
+import 'package:provider/provider.dart';
+import '../controleEstado/controle_estado.dart';
 
 
-class TelaVisualizacao extends StatefulWidget {
-  const TelaVisualizacao({super.key});
-
-  @override
-  _TelaVisualizacaoState createState() => _TelaVisualizacaoState();
-}
-
-class _TelaVisualizacaoState extends State<TelaVisualizacao> {
-  List<OKR> listaOKRs = [];
-
-  void adicionarOKR(OKR okr) {
-    setState(() {
-      listaOKRs.add(okr);
-      listaOKRs.sort((a, b) => a.nome.compareTo(b.nome));
-    });
-  }
-
-  void atualizarOKR(OKR okrAntigo, OKR okrNovo) {
-    setState(() {
-      listaOKRs.remove(okrAntigo);
-      listaOKRs.add(okrNovo);
-      listaOKRs.sort((a, b) => a.nome.compareTo(b.nome));
-    });
-  }
-
-  void excluirOKR(OKR okr) {
-    setState(() {
-      listaOKRs.remove(okr);
-    });
-  }
+class TelaVisualizacao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final okrs = context.watch<ControleEstado>().okrs;
     return Scaffold(
       appBar: AppBar(
         title: Text('OKRs'),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: () async {
-              final novoOKR = await Navigator.push(
+            onPressed: () {
+              Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => TelaCriacao(),
-                ),
+                MaterialPageRoute(builder: (context) => TelaCriacao()),
               );
-              if (novoOKR != null) adicionarOKR(novoOKR);
             },
           ),
         ],
       ),
       body: ListView.builder(
-        itemCount: listaOKRs.length,
+        itemCount: okrs.length,
         itemBuilder: (context, index) {
-          final okr = listaOKRs[index];
+          final okr = okrs[index];
           final dataFormatada = DateFormat('dd/MM/yyyy HH:mm').format(okr.dataCriacao);
           return ListTile(
             title: Text(
@@ -78,26 +49,12 @@ class _TelaVisualizacaoState extends State<TelaVisualizacao> {
             ),
             trailing: IconButton(
               icon: Icon(Icons.edit),
-              onPressed: () async {
-                final resultado = await Navigator.push(
+              onPressed: () {
+                Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => TelaEdicao(
-                      okr: okr,
-                    ),
+                  MaterialPageRoute(builder: (context) => TelaEdicao(okr: okr),
                   ),
                 );
-                if (resultado is OKR) {
-                  atualizarOKR(okr, resultado);
-                } else if (resultado == 'excluir') {
-                  final confirmacao = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TelaConfirmacaoExclusao(okr: okr),
-                    ),
-                  );
-                  if (confirmacao == true) excluirOKR(okr);
-                }
               },
             ),
           );

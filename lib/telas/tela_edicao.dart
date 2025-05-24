@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:okrs_control/telas/tela_confirmacao_exclusao.dart';
 import '../modelos/okr.dart';
+import 'package:provider/provider.dart';
+import '../controleEstado/controle_estado.dart';
 
 class TelaEdicao extends StatefulWidget {
   final OKR okr;
-  const TelaEdicao({super.key, required this.okr});
+  const TelaEdicao({required this.okr});
 
   @override
   _TelaEdicaoState createState() => _TelaEdicaoState();
@@ -36,12 +39,22 @@ class _TelaEdicaoState extends State<TelaEdicao> {
         dataCriacao: DateTime.now(),
         localizacao: novaLocalizacao,
       );
-      Navigator.pop(context, okrAtualizado);
+      context.read<ControleEstado>().atualizar(widget.okr, okrAtualizado);
+      Navigator.pop(context);
     }
   }
 
-  void _confirmarExclusao() {
-    Navigator.pop(context, 'excluir');
+  void _confirmarExclusao() async {
+    final confirmacao = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TelaConfirmacaoExclusao(okr: widget.okr),
+      ),
+    );
+    if (confirmacao == true) {
+      context.read<ControleEstado>().excluir(widget.okr);
+      Navigator.pop(context);
+    }
   }
 
   @override

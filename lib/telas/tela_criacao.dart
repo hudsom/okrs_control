@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../modelos/okr.dart';
+import 'package:provider/provider.dart';
+import '../controleEstado/controle_estado.dart';
+
 
 class TelaCriacao extends StatefulWidget {
-  const TelaCriacao({super.key});
 
   @override
   _TelaCriacaoState createState() => _TelaCriacaoState();
@@ -15,19 +17,8 @@ class _TelaCriacaoState extends State<TelaCriacao> {
   final _descricaoController = TextEditingController();
 
   Future<String> _obterLocalizacao() async {
-    bool servicoAtivo = await Geolocator.isLocationServiceEnabled();
-    if (!servicoAtivo) return 'Serviço de localização desativado';
-
-    LocationPermission permissao = await Geolocator.checkPermission();
-    if (permissao == LocationPermission.denied) {
-      permissao = await Geolocator.requestPermission();
-      if (permissao == LocationPermission.deniedForever) {
-        return 'Permissão de localização negada';
-      }
-    }
-
     Position posicao = await Geolocator.getCurrentPosition();
-    return 'Lat: \${posicao.latitude}, Long: \${posicao.longitude}';
+    return 'Lat: ${posicao.latitude}, Long: ${posicao.longitude}';
   }
 
   void _salvarOKR() async {
@@ -39,7 +30,8 @@ class _TelaCriacaoState extends State<TelaCriacao> {
         dataCriacao: DateTime.now(),
         localizacao: localizacao,
       );
-      Navigator.pop(context, novoOKR);
+      context.read<ControleEstado>().adicionar(novoOKR);
+      Navigator.pop(context);
     }
   }
 
